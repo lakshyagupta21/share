@@ -9,17 +9,23 @@ import android.view.MenuItem;
 import android.widget.Button;
 
 import org.odk.share.R;
+import org.odk.share.application.Share;
+import org.odk.share.database.ShareDatabaseHelper;
+import org.odk.share.dto.ShareInstance;
 import org.odk.share.preferences.SettingsPreference;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity {
 
     @BindView(R.id.toolbar) Toolbar toolbar;
     @BindView(R.id.bSendForms) Button sendForms;
     @BindView(R.id.bViewWifi) Button viewWifi;
+
+    private ShareDatabaseHelper databaseHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +35,18 @@ public class MainActivity extends AppCompatActivity {
 
         setTitle(getString(R.string.send_forms));
         setSupportActionBar(toolbar);
+
+        Share.createODKDirs();
+        databaseHelper = new ShareDatabaseHelper();
+
+        ShareInstance instance = new ShareInstance();
+        instance.setInstanceId((long) 1);
+        instance.setInstructions("Instru");
+        instance.setLastStatusChangeDate((long) 123);
+        instance.setReviewed(true);
+        instance.setTransferStatus("sent");
+
+        Timber.d("ID : " + databaseHelper.insertInstance(instance));
     }
 
     @OnClick (R.id.bViewWifi)
