@@ -316,6 +316,19 @@ public class HotspotSendTask extends AsyncTask<Long, Integer, String> {
                 while (c.moveToNext()) {
                     String instance = c.getString(
                             c.getColumnIndex(InstanceProviderAPI.InstanceColumns.INSTANCE_FILE_PATH));
+                    String displayName = c.getString(
+                            c.getColumnIndex(InstanceProviderAPI.InstanceColumns.DISPLAY_NAME));
+                    String submissionUri = c.getString(
+                            c.getColumnIndex(InstanceProviderAPI.InstanceColumns.SUBMISSION_URI));
+
+                    dos.writeUTF(displayName);
+
+                    if (submissionUri == null) {
+                        dos.writeUTF("-1");
+                    } else {
+                        dos.writeUTF(submissionUri);
+                    }
+
                     publishProgress(++progress, total);
                     Timber.d("Progress " + progress + " " + total);
                     sendInstance(instance);

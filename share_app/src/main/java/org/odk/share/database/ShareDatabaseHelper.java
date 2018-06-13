@@ -23,9 +23,8 @@ import static org.odk.share.dto.ShareInstance.TRANSFER_STATUS;
 
 public class ShareDatabaseHelper extends SQLiteOpenHelper {
 
-    private static final String DATABASE_NAME = "instances.db";
+    private static final String DATABASE_NAME = "share.db";
     private static final String SHARE_TABLE_NAME = "share";
-    private static final String INSTANCE_TABLE_NAME = "instances";
 
     private static final int DATABASE_VERSION = 4;
 
@@ -54,10 +53,10 @@ public class ShareDatabaseHelper extends SQLiteOpenHelper {
                 + ID + " integer primary key, "
                 + REVIEWED + " boolean, "
                 + INSTRUCTIONS + " text, "
-                + INSTANCE_ID + " integer, "
+                + INSTANCE_ID + " integer not null, "
                 + TRANSFER_STATUS + " text not null, "
-                + LAST_STATUS_CHANGE_DATE + " date not null, "
-                + "FOREIGN KEY ("+ INSTANCE_ID +") REFERENCES " + INSTANCE_TABLE_NAME + "(" + InstanceProviderAPI.InstanceColumns._ID + ")); ");
+                + LAST_STATUS_CHANGE_DATE + " date not null ); ");
+
     }
 
     public long insertInstance(ShareInstance instance) {
@@ -73,5 +72,20 @@ public class ShareDatabaseHelper extends SQLiteOpenHelper {
         sqLiteDatabase.close();
 
         return id;
+    }
+
+    public long insertInstance(ContentValues values) {
+        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
+
+        if (!values.containsKey(REVIEWED)) {
+            values.put(REVIEWED, false);
+        }
+
+        Long now = System.currentTimeMillis();
+
+        if (!values.containsKey(LAST_STATUS_CHANGE_DATE)) {
+            values.put(LAST_STATUS_CHANGE_DATE, now);
+        }
+        return sqLiteDatabase.insert(SHARE_TABLE_NAME, null, values);
     }
 }

@@ -1,12 +1,18 @@
 package org.odk.share.tasks;
 
+import android.content.ContentValues;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
 
 import org.odk.share.dao.FormsDao;
+import org.odk.share.dao.InstancesDao;
+import org.odk.share.database.ShareDatabaseHelper;
+import org.odk.share.dto.ShareInstance;
 import org.odk.share.listeners.ProgressListener;
 import org.odk.share.provider.FormsProviderAPI;
+import org.odk.share.provider.InstanceProviderAPI;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -21,6 +27,19 @@ import java.util.Calendar;
 import java.util.Locale;
 
 import timber.log.Timber;
+
+import static org.odk.share.dto.ShareInstance.INSTANCE_ID;
+import static org.odk.share.dto.ShareInstance.INSTRUCTIONS;
+import static org.odk.share.dto.ShareInstance.LAST_STATUS_CHANGE_DATE;
+import static org.odk.share.dto.ShareInstance.REVIEWED;
+import static org.odk.share.dto.ShareInstance.TRANSFER_STATUS;
+import static org.odk.share.provider.InstanceProviderAPI.InstanceColumns.CAN_EDIT_WHEN_COMPLETE;
+import static org.odk.share.provider.InstanceProviderAPI.InstanceColumns.DISPLAY_NAME;
+import static org.odk.share.provider.InstanceProviderAPI.InstanceColumns.INSTANCE_FILE_PATH;
+import static org.odk.share.provider.InstanceProviderAPI.InstanceColumns.JR_FORM_ID;
+import static org.odk.share.provider.InstanceProviderAPI.InstanceColumns.JR_VERSION;
+import static org.odk.share.provider.InstanceProviderAPI.InstanceColumns.STATUS;
+import static org.odk.share.provider.InstanceProviderAPI.InstanceColumns.SUBMISSION_URI;
 
 /**
  * Created by laksh on 5/31/2018.
@@ -106,7 +125,7 @@ public class WifiReceiveTask extends AsyncTask<String, Integer, String> {
             }
 
             // readInstances
-            readInstances(formId);
+            readInstances(formId, formVersion);
             return true;
         } catch (IOException e) {
             Timber.e(e);
@@ -152,21 +171,38 @@ public class WifiReceiveTask extends AsyncTask<String, Integer, String> {
             }
 
             Timber.d(displayName + " " + formId + " " + formVersion + " " + submissionUri);
-            receiveFile(FORM_PATH);
+            String filename = receiveFile(FORM_PATH);
             int numOfRes = dis.readInt();
             while (numOfRes-- > 0) {
                 receiveFile(FORM_PATH + displayName + "-media");
             }
+
+            // Add row in forms.db
+            ContentValues values = new ContentValues();
+            values.put(FormsProviderAPI.FormsColumns.DISPLAY_NAME, displayName);
+            values.put(FormsProviderAPI.FormsColumns.JR_FORM_ID, formId);
+            values.put(FormsProviderAPI.FormsColumns.JR_VERSION, formVersion);
+            values.put(FormsProviderAPI.FormsColumns.FORM_FILE_PATH, FORM_PATH + filename );
+            values.put(FormsProviderAPI.FormsColumns.SUBMISSION_URI, submissionUri);
+            values.put(FormsProviderAPI.FormsColumns.FORM_MEDIA_PATH, FORM_PATH + displayName + "-media");
+            new FormsDao().saveForm(values);
         } catch (IOException e) {
             Timber.e(e);
         }
     }
 
-    private void readInstances(String formId) {
+    private void readInstances(String formId, String formVersion) {
         try {
             int numInstances = dis.readInt();
             while (numInstances-- > 0) {
                 publishProgress(++progress, total);
+                String displayName = dis.readUTF();
+                String submissionUri = dis.readUTF();
+
+                if (submissionUri.equals("-1")) {
+                    submissionUri = null;
+                }
+
                 int numRes = dis.readInt();
                 String time = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss-SSS",
                         Locale.ENGLISH).format(Calendar.getInstance().getTime());
@@ -174,15 +210,35 @@ public class WifiReceiveTask extends AsyncTask<String, Integer, String> {
                 while (numRes-- > 0) {
                     receiveFile(path);
                 }
+
+                // Add row in instances table
+                ContentValues values = new ContentValues();
+                values.put(DISPLAY_NAME, displayName);
+                values.put(STATUS, InstanceProviderAPI.STATUS_COMPLETE);
+                values.put(CAN_EDIT_WHEN_COMPLETE, "true");
+                values.put(SUBMISSION_URI, submissionUri);
+                values.put(INSTANCE_FILE_PATH, Environment.getExternalStorageDirectory() + "/" + path);
+                values.put(JR_FORM_ID, formId);
+                values.put(JR_VERSION, formVersion);
+                Timber.d("Content " + values);
+                Uri uri = new InstancesDao().saveInstance(values);
+                Timber.d(uri + " " + uri);
+
+                // Add row in share table
+                ContentValues shareValues = new ContentValues();
+                shareValues.put(INSTANCE_ID, Long.parseLong(uri.getLastPathSegment()));
+                shareValues.put(TRANSFER_STATUS, "receive");
+                new ShareDatabaseHelper().insertInstance(shareValues);
             }
         } catch (IOException e) {
             Timber.e(e);
         }
     }
 
-    private void receiveFile(String path) {
+    private String receiveFile(String path) {
+        String filename = null;
         try {
-            String filename = dis.readUTF();
+            filename = dis.readUTF();
             long fileSize = dis.readLong();
             Timber.d("Size of file " + filename + " " + fileSize);
             File shareDir = new File(Environment.getExternalStorageDirectory(), path);
@@ -206,6 +262,7 @@ public class WifiReceiveTask extends AsyncTask<String, Integer, String> {
         } catch (IOException e) {
             Timber.e(e);
         }
+        return filename;
     }
 
     @Override
