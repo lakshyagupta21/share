@@ -111,5 +111,8 @@ public class MainActivity extends InjectableActivity implements LoaderManager.Lo
     private void onListItemClick(View view, int position) {
         Cursor cursor = formAdapter.getCursor();
         cursor.moveToPosition(position);
+
+        Intent intent  = new Intent(this, InstanceManagerTabs.class);
+        startActivity(intent);
     }
 }

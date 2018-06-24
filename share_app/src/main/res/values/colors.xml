@@ -3,4 +3,6 @@
     <color name="colorPrimary">#00796B</color>
     <color name="colorPrimaryDark">#004D40</color>
     <color name="colorAccent">#00796B</color>
+    <color name="navigationBarColor">#000000</color>
+    <color name="windowBackground">#FFFFFF</color>
 </resources>
