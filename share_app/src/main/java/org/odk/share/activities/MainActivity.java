@@ -18,12 +18,14 @@ import org.odk.share.R;
 import org.odk.share.adapters.FormsAdapter;
 import org.odk.share.application.Share;
 import org.odk.share.dao.FormsDao;
+import org.odk.share.dao.TransferDao;
 import org.odk.share.preferences.SettingsPreference;
 import org.odk.share.provider.FormsProviderAPI;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import timber.log.Timber;
 
 public class MainActivity extends InjectableActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -57,6 +59,54 @@ public class MainActivity extends InjectableActivity implements LoaderManager.Lo
         LinearLayoutManager llm = new LinearLayoutManager(this);
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(llm);
+
+        Cursor cursor = new TransferDao().getSentInstancesCursor();
+        if (cursor != null) {
+            try {
+                if (cursor.moveToFirst()) {
+                    Timber.d("Cursor " + cursor);
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+        Timber.d("Cursor closed");
+
+        cursor = new TransferDao().getReceiveInstancesCursor();
+        if (cursor != null) {
+            try {
+                if (cursor.moveToFirst()) {
+                    Timber.d("Cursor " + cursor);
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+        Timber.d("Cursor closed");
+
+        cursor = new TransferDao().getReviewedInstancesCursor();
+        if (cursor != null) {
+            try {
+                if (cursor.moveToFirst()) {
+                    Timber.d("Cursor " + cursor);
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+        Timber.d("Cursor closed");
+
+        cursor = new TransferDao().getUnreviewedInstancesCursor();
+        if (cursor != null) {
+            try {
+                if (cursor.moveToFirst()) {
+                    Timber.d("Cursor " + cursor);
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+        Timber.d("Cursor closed");
     }
 
     @Override
