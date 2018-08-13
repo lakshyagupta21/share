@@ -1,16 +1,24 @@
 # Share
-*This project is under development*
 
-## Project Description
+## Table of Contents
+1. [Introduction](#introduction)
+2. [About Share](#about share)
+3. [Third Example](#third-example)
 
-The common requirement of Collect users is to share forms between devices. This app will allow enumerators to share partially/completely filled forms with each other and also help supervisor in reviewing the forms. The main focus of this project is to use different communication methods possible in Android devices so that form can be transferred without any connection issues.
 
-## Motivation
+## 1. Introduction
+### 1.1 About Share
 
-There are two use cases which are the main reason for implementing this app
-1. Currently, Collect is used to download blank forms, to fill them and to upload them to the server, there is no collaboration feature yet which help different enumerators to fill the same form with different sections.
-1. Sometimes organizations want to have some review of the forms before sending them to the server. Forms and instances from Collect instead of sending to the server will be sent to this app for the review. Forms from different enumerators of a team will be aggregated to a single device for review.
+Share is an Android application which is a companion app to ODK Collect and it helps different enumerators to share the filled and blanks forms with each other, it also helps organization’s supervisor in reviewing the forms before actually submitting to the server. 
 
-## Links
-* ODK Forum: [https://forum.opendatakit.org/t/internship-project-device-to-device-transfer-android-app/11753](https://forum.opendatakit.org/t/internship-project-device-to-device-transfer-android-app/11753)
-* Project Proposal: [https://docs.google.com/document/d/1nGsVjEr_Vc4fywn6yHKiLkR2kLcEz_VTJteVCrEnRfo](https://docs.google.com/document/d/1nGsVjEr_Vc4fywn6yHKiLkR2kLcEz_VTJteVCrEnRfo)
+### 1.2 Why Share
+
+
+Share is designed to enable offline transfer of blank and filled forms. There are three major use cases for this multi-part surveys, supervisor review and blank form distribution.
+ODK Collect is designed in such a way that it allows enumerators to download the blank forms and provide them with the interface to fill the blank forms, but sometimes there can be more than one enumerators who want to fill the same form. Collect doesn’t allow more than one enumerators to collaborate on a single form. This is where Share comes into the picture using Share one can select any number of forms and can send to the other enumerator will all the resources attached to it.
+
+Also, sometimes organizations want to review filled forms before sending to the server. So enumerators can send the forms to the supervisor then the supervisor can mark forms as reviewed (accepted/rejected) with some feedback and then can send back to the same enumerator if required.
+
+In some areas, enumerators don’t have any internet connectivity, so they can’t fetch blank forms from the server. Share also allows to send a blank form in case of no internet connectivity provided the devices should be close enough to create a local connection.
+
+## Third Example
